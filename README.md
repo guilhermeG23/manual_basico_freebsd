@@ -488,11 +488,15 @@ ___
 
 ### Primeiro login
 
+&nbsp;
+
 ```
 FreeBSD/amd64 (teste_freebsd) (ttyv0)
 
 login:
 ```
+
+&nbsp;
 
 Depois de toda a tela de verbose após iniciar o sistema que é exatamente igual a tela de bootinstall, o sistema para na tela de login entrando as informações de:
 
@@ -500,7 +504,10 @@ Depois de toda a tela de verbose após iniciar o sistema que é exatamente igual
 * Hostname: teste_freebsd;
 * Console virtual: ttyv0;
 
-O login é a entrada de usuários que foram registrados durante a instalação, com exemplos desses podemos logar no ````root``` e no ```teste``` criados durante a instalação da versão em uso.
+&nbsp;
+
+
+O login é a entrada de usuários que foram registrados durante a instalação, com exemplos desses podemos logar no ```root``` e no ```teste``` criados durante a instalação da versão em uso.
 
 Após o login, uma mensagem será printada no terminal console, sendo essa o ```MOTD```, que entrada várias informações, Ex:
 
@@ -521,9 +528,9 @@ ___
 
 Isso é algo comum, normalmente só utilizamos um único terminal por ver, isso é, um único console por ver, cada console é nomeado de ```ttyv*```, indo de 0 a 8, podendo ser alterado com o uso dos comandos ```Alt+F*``` de 1 a 8.
 
-O local onde fica as configurações de consoles virtuais é no ```/etc/ttys```.
+&nbsp;
 
-Dentro do arquivo de configuração dos ttys, é bom orientar que:
+O local onde fica as configurações de consoles virtuais é no ```/etc/ttys```, aproveitando, é bom orientar que:
 
 * Não comente a linha ```ttyv0```, afinal é o default;
 * O ```ttyv8``` é normalmente utilizado pelos programas que geram interfaces gráficas, no caso o Xorg.
@@ -586,6 +593,300 @@ Vale tambem comentar que a ```nobody``` é a conta genérica do sistema e que n�
 
 ___
 
+
+&nbsp;
+
+### Usuário típico
+
+&nbsp;
+
+Cada conta dentro de um S.O tem suas caracteristicas, sendo assim, o mesmo vale para o BSD, segue abaixo as caracteristicas de um usuário do sistema:
+
+&nbsp;
+
+* ```Nome do usuário``` -> Nome único de acesso a uma conta dentro do S.O, existem muitas padronizações deste, sendo essas:
+    * Usuário em letras maiusculas;
+    * Primeira letra do primeiro nome e usar o segundo nome para completar o restante dos caracteres;
+    * Limitar a quantidade de caracteres a 8;
+    * Além de outras demais...
+* ```Senha``` -> Aqui é só colocar uma senha para proteger seu usuário;
+* ```ID (UID)``` -> Número único de identificação do usuário;
+    * Recomendado usar um ```UID``` menor que ```65535``` para não haver conflitos com softwares;
+* ```GID``` -> ID do grupo, o BSD usa esse método em vez do ```UID``` para diminuir significativamente o tamanho dos arquivos de configuração das aplicações;
+    * Recomendado usar um ```GID``` menor que ```65535``` para não haver conflitos com softwares;
+    * Usuários podem pertencer a mais de um grupo, isso é, o grupo que libera acessos as aplicações, assim se um usuário pertencer a determinado grupo, ele terá direito de usar as mesmas aplicações;
+
+&nbsp;
+
+Como comentado dentro do handbook, os usuários BSD não tem tempo de expiração, isso é, sua vida útil é ilimitada, necessitando de um utilitário para dar fim a mesma ou alguma configuração personalizada que realize a ação.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Cuidados com o ROOT!!!!
+
+&nbsp;
+
+Acho que já deu para entender que o ```root``` é literalmente o cara que manda em tudo no S.O... sim, ele é o usuário com acesso irestrito a todo o S.O, por isso deve ser protegido a 7 chaves e não deve ser usado de forma leviana, isso é, não trabalhe como ```root``` se não for necessário.
+
+&nbsp;
+
+Para que você fique ciente, uma forma fácil de saber se você tá em ```root``` é:
+
+&nbsp;
+
+* Diferenças visuais do shell como:
+    * \# -> Usuário root tem esse símbolo no shell;
+    * $ -> Usuário comum tem esse símbolo no shell;
+    * O usuário é sempre mostrado no shell na command line, Ex: ```teste@hostname:diretorio$```
+* Por comandos, pode se usar o:
+    * ```whoami``` -> Utilitário que fala qual é o usuário em uso no momento;
+    * ```cd ~``` + ```pwd``` -> Isso é, o ```cd``` vai mandar seu command line para o diretório do usuário atual e ```pwd``` é um utilitário que mostra em qual diretório você está no sistema, no caso, o diretório do seu usuário;
+
+&nbsp;
+
+Vale comentar que o usuário pode se tornar ```root``` utilizando o comando ```su```, más para isso, existem duas etapas, sendo essas:
+
+&nbsp;
+
+* O usuário que vai receber permissão ```root``` tem que estar no grupo ```wheel``` como já comentado uma vez;
+* Saber a senha do usuário ```root``` para obter seus privilégios;
+
+&nbsp;
+
+Um exemplo de como liberar acesso ao ```root``` a um usuário comum, lembrando que isso será comentando com mais detalhes a frente:
+
+&nbsp;
+
+![adicionandoowheelbsd](img/adicionandoowheelbsd.png)
+<center><small>Adicionando o wheel a um usuário comum.</small></center>
+
+&nbsp;
+
+![setornandorootbsd](img/setornandorootbsd.png)
+<center><small>Se tornando root via usuário comum que está no grupo wheel.</small></center>
+
+&nbsp;
+
+Há, o ```su -``` é só entrar no usuário com maior permissão e no caso, com o ```-```, é entrar já na estrutura de diretório do usuário alvo.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Gerenciamento de usuários
+
+&nbsp;
+
+Sabe o mais pra frente que eu falei... bem, é agora, sendo essas as ferramentas para gerenciamento dos usuários do sistema:
+
+* ```adduser``` -> Adicionar usuários;
+* ```rmuser``` -> Deletar usuários;
+* ```chpass``` -> Alterar informações do usuário;
+* ```passwd``` -> Alterar a senhas dos usuários;
+* ```pw``` -> Utilitário para modificar totalmente o usuário;
+
+&nbsp;
+
+#### ***ADDUSER***
+
+A ferramenta é utilizada e recomenda para adicionar novos usuários dentro do sistema, para fazer isso, primeiramente você precisa de acesso de superusuário, o ```root``` para ser mais especifico ou qualquer usuário com igual poder..., más certo, oqê acontece quando vamos adicionar um novo usuário? Isso aqui:
+
+&nbsp;
+
+* É criado um diretório no ```/home``` que irá pertencer ao novo usuário;
+* É atualizado o ```/etc/passwd``` para o novo usuário;
+* É atualizado e alterado os grupos no arquivo ```/etc/group```;
+* O diretório do novo usuário irá receber as configurações padrão que vem do ```/usr/share/skel```;
+
+&nbsp;
+
+É valido comentar que, a tela do ```adduser``` é exatamente a mesma de quando criado um usuário no install do BSD.
+
+Se não acredita em mim, veja o ```adduser pastel``` abaixo:
+
+&nbsp;
+
+![addpasteluserbsd](img/addpasteluserbsd.png)
+<center><small>Fiquei com fome nas print...</small></center>
+
+&nbsp;
+
+###### P.S: Acho que se já notou, más quando é digitado senhas, para entrar, criar ou modificar alguma coisa ou mesmo o usuário, ela não aparece na tela... então, cuidado com isso quando criar o usuário, se você tiver o root, até se salva, más mesmo assim, é um transtorno a mais.
+
+&nbsp;
+
+Há, por fim... pra você que ficou pensando "E se eu adicionar um usuário com um nome que já existe, afinal, o que conta de verdade é o UID e o GID né?"... Bem, não é assim támbem, como vai de exemplo na imagem abaixo, o nome influencia na criação do diretorio e demais, más foi mais por curiosidade mesmo, afinal o handbook não comentou sobre esse ponto ***(Mesmo que pareça óbvio que iria dar errado)***.
+
+&nbsp;
+
+![erroradduserbsd](img/erroradduserbsd.png)
+<center><small>Erro ao adicionar novos usuários.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+#### ***RMUSER***
+
+
+&nbsp;
+
+Já falamos sobre adicionar, agora vamos ao deletar, lembrando que para você criar, eliminar ou qualquer coisa, você precisa ter as permissões necessárias, isso é, vai fazer em ```root``` ou qualquer usuário com poderes iguais, más bem, segue abaixo as ações do ```rmuser```:
+
+* Remove as configurações de crontab do usuário -> Caso existir;
+* Finaliza todos os ```jobs``` em execução do usuário;
+* Mata todos os processos do usuário;
+* Remove as configurações do ```/var/mail``` do usuário;
+* Elimina todos os arquivos no ```/tmp``` pertencentes ao determinado usuário;
+* Elimina o usuário dos grupos a quais ele pertence, isso no arquivo ```/etc/group```.
+* Se um grupo não tiver nenhum usuário e ele tiver o mesmo nome do usuário, o grupo é eliminado;
+* O diretório no ```/home``` do usuário não é eliminado sumáriamente, ele precisa ser requisitado no momento do rm;
+
+&nbsp;
+
+Bem, como eu fiquei com fome depois do usuário pastel, melhor eliminar ele, só pra eu esquecer do pastel e me concentrar aqui.
+
+&nbsp;
+
+![rmpasteluserbsd](img/rmpasteluserbsd.png)
+<center><small>Lá se foi o pastel.... ainda com fome.</small></center>
+
+&nbsp;
+
+Ok, chega de piadas neste ponto, na imagem, foi expresso meu desejo por eliminar o usuário e eliminar o diretório no ```/home``` deste usuário, com isso, o usuário está totalmente eliminado do sistema, as únicas provas do mesmo serão arquivos pertencentes a ele forá do ```/home``` ou logs por exemplo.
+
+
+
+&nbsp;
+
+___
+
+&nbsp;
+
+#### ***CHPASS***
+
+&nbsp;
+
+Esse é um utilitário que pode ser utilizado pelo próprio usuário sem a permissão ```root``` ou qualquer superusuário, a função deste comando é alterar a base de dados do determinado usuário alvo, podendo ser feita de duas formas:
+
+&nbsp;
+
+* ```chpass``` -> Isso vai abrir um editor num arquivo contendo informações do usuário atual;
+* ```chpass <usuario>``` -> Isso vai abrir um editor num arquivo contendo informações do usuário alvo e esse precisa do superusuário, afinal, você está alterando informações de um terceiro;
+
+&nbsp;
+
+Más de forma mais simples de se entender, o ```chpass``` abre um editor de texto para você alterar o banco de dados do usuário de forma que o mesmo fique correto ou que algo sejá alterado, lembrando que há a necessidade de recarregar essas informações.
+
+&nbsp;
+
+![chpasstestebsd](img/chpasstestebsd.png)
+<center><small>Lá se foi o pastel.... ainda com fome.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+#### ***PASSWD***
+
+&nbsp;
+
+Comemorei cedo demais e aparece outro que não precisa de superusuário para ser acionado, neste caso, o ```passwd``` é para alterar o campo da senha do usuário atual ou alvo, sabe aquele campo que se viu na imagem acima, o ```Password```, é exatamente isso que o ```passwd``` vai mexer, além de o mesmo já deixar a senha já cifrada.
+
+&nbsp;
+
+Assim como o ```chpass```, o ```passwd``` tem duas formas de funcionar, a primeira é pelo próprio usuário, onde o sistema requisita a senha antiga para alterar há uma nova e a segunda é utilizando o comando e direcionando a um determinado usuário, onde lá, não será requisitado a senha antiga e sim, somente colocar a nova e finalizar o problema, segue imagens sobre as ocorrências abaixo:
+
+&nbsp;
+
+![passwdbsd1](img/passwdbsd1.png)
+<center><small>Aqui foi feito pelo próprio usuário, onde é necessário digitar a senha antiga para conseguir alterar para uma nova.</small></center>
+
+&nbsp;
+
+![passwdbsd2](img/passwdbsd2.png)
+<center><small>Aqui foi feito pelo próprio superusuário, onde ele simplesmente falou, coloque a nova senha, sem a necessidade da senha antiga já existente ao usuário.</small></center>
+
+
+&nbsp;
+
+###### P.S: É com esse comando que você concerta o problema sobre usar senha randomica no usuário, esquecer a senha de demais usuários ou alterar... lembrando, nunca esqueça a senha do root, senão é entrar em modo recuperação e ir ajustar como usuário único e torcer para a sessão ser segura. 
+
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Gerenciador de grupos via PW
+
+&nbsp;
+
+Um grupo é o conjunto de um ou mais integrantes que podem realizar determinada tarefa com base na permissão desse grupo, esses grupos ficam listados no arquivo ```/etc/group``` do BSD.
+
+&nbsp;
+
+Se o usuário tem o ```UID```,  o grupo tem o ```GID```, que consiste do nome e identificação, para a realização de processos do sistema, se é usado tanto o ```UID``` para saber quem está realizando tal coisa e o ```GID```, que confirma se um usuário pode realizar a determinada ação corretamente.
+
+&nbsp;
+
+Exemplos de uso do ```PW``` na realidade:
+
+&nbsp;
+
+![permissionamentopwbsd](img/permissionamentopwbsd.png)
+<center><small>Aqui um grupo é criado, mostrado suas informações gerais e um usuário já é integrado neste grupo.</small></center>
+
+&nbsp;
+
+O uso da opção ```-M``` é para substituir membros já existentes ou adicionar membros a grupos vazios, isso é, se esse cara for usado, todos os antigos usuários que pertenciam a este grupo seram retirados e somente será colocado o novo usuário, Ex:
+
+&nbsp;
+
+![groupmodm1bsd](img/groupmodm1bsd.png)
+<center><small>Olha o exemplo prático de um erro que pode f***** seu dia.</small></center>
+
+&nbsp;
+
+Agora vai o exemplo do ```-m```, que em vez de substituir, ele adiciona usuários ao grupo, Ex:
+
+&nbsp;
+
+![groupmodm2bsd](img/groupmodm2bsd.png)
+<center><small>Agora é só um incremento, menos pior se for ver... bem, depende do problema.</small></center>
+
+&nbsp;
+
+Há, lembrando, quando utilizado a ferramenta ```pw```, somente é alterado o arquivo do ```/etc/groups```, o arquivo ```/etc/passwd``` fica intocado.
+
+&nbsp;
+
+___
+
+
+&nbsp;
+
+### Permissões
+
+&nbsp;
+
+
+
+&nbsp;
+
+___
+
 &nbsp;
 
 ### Estrutura de Diretório
@@ -594,47 +895,75 @@ ___
 
 Segue abaixo uma tabela com o esquema de diretórios do sistema FreeBSD, lembrando que o diretório principal é a raiz do sistema, o ```/```.
 
+&nbsp;
+
 | Diretório | Descrição | 
 |---|---|
 |/| Raiz do sistema|
-|/bin||
-|/boot||
-|/boot/defaults||
-|/dev||
-|/etc||
-|/etc/defaults||
-|/etc/mail||
-|/etc/periodic||
-|/etc/ppp||
-|/mnt||
-|/proc||
-|/rescue||
-|/root||
-|/sbin||
-|/tmp||
-|/usr||
-|/usr/bin||
-|/usr/include||
-|/usr/lib||
-|/usr/libdata||
-|/usr/libexec||
-|/usr/local||
-|/usr/obj||
-|/usr/ports||
-|/usr/sbin||
-|/usr/share||
-|/usr/src||
-|/var||
-|/var/log||
-|/var/mail||
-|/var/spool||
-|/var/tmp||
-|/var/yp||
+|/bin|Utilitários fundamentais para usuário único ou multiusuário|
+|/boot|Programas e configurações utilizadas para o boot do sistema|
+|/boot/defaults|Arquivos de configuração de inicialização padrão.|
+|/dev|Conexões com dispositivos de hardware, como impressoras e discos, além de demais outros.|
+|/etc|Arquivos e scripts de configuração do sistema.|
+|/etc/defaults|Configuração padrão do sistema S.O.|
+|/etc/mail|Configuração para softwares de email.|
+|/etc/periodic|Scrips que serão executados pela crontab.|
+|/etc/ppp|Arquivos de configuração do protocolo de ponto a ponto ```(PPP)```.|
+|/mnt|Diretório vazio com utilidade de ser utilizado para montagem de unidades externas, em rede ou demais.|
+|/proc|Sistema de arquivos de processo.|
+|/rescue|Softwares para recuperação do sistema.|
+|/root|Diretório da conta ```root```.|
+|/sbin|Programas e utilitários fundamentais para o funcionamento do sistema.|
+|/tmp|Arquivos temporários que geralmente não são preservados durante a reinicialização do sistema pois é montado durante tempo de execução, então fica em memória.|
+|/usr|A maioria dos utilitários e aplicativos do usuário.|
+|/usr/bin|Utilitários, ferramentas de programação e aplicativos comuns.|
+|/usr/include|O padrão C de arquivos incluidos.|
+|/usr/lib|Biblioteca dos arquivos em geral.|
+|/usr/libdata|Arquivos de dados de utilitários diversos.|
+|/usr/libexec|Daemons do sistema e utilitários do sistema executados por outros programas.|
+|/usr/local|Executáveis ​​e bibliotecas locais, que também é usado como destino padrão para o framework de ports, dentro do próprio do / usr / local , o layout geral esboçado por hier (7) para / usr deve ser usado. As exceções são o diretório man, que está diretamente em / usr / local em vez de em / usr / local / share , e a documentação do ports está em share / doc / port .|
+|/usr/obj|Diretório produzido pela construção do diretório /usr/src|
+|/usr/ports|Coleção de ports do FreeBSD|
+|/usr/sbin|Daemons do sistema e utilitarios executados pelo usuário|
+|/usr/share|Arquivos independentes de arquitetura|
+|/usr/src|BSD e/ou arquivos de origem local|
+|/var|Arquivos diversos e de multiuso, como logs, spool, valores fixos do sistema e demais, esse diretório só existe em tempo de execção, já que é montado em memória|
+|/var/log|Arquivos de log diversos|
+|/var/mail|Caixa de correio|
+|/var/spool|Arquivos de spool|
+|/var/tmp|Arquivos temporários que são preservados após a reinicialização do S.O|
+|/var/yp|Mapas NIS ***(Conferir melhor esse ponto depois)***|
+
+&nbsp;
+
+Segue um exemplo da raiz do FreeBSD, lembrando que essa foi uma instalação ```default``` e sem qualquer alterações:
 
 &nbsp;
 
 ![raizbsd](img/raizbsd.png)
 <center><small>Toda a raiz simples de um BSD sem customizações.</small></center>
+
+&nbsp;
+
+Fica abaixo um exemplo do uso do local do ```/usr/local``` após qualquer instalação de um programa externo ao que já forá adicionado durante a instalação.
+
+&nbsp;
+
+![userlocalhtopbsd](img/userlocalhtopbsd.png)
+<center><small>Demonstração de um /usr/local com a instação de somente o componente htop dentro do S.O.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Comando SU
+
+&nbsp;
+
+![exemplocomandosu](img/exemplocomandosu.png)
+<center><small>Exemplo da troca de usuário em tempo real via comando su no shell SH BSD.</small></center>
 
 &nbsp;
 
@@ -648,8 +977,12 @@ ___
 
 Para o desligamento do sistema BSD, é feito os seguintes passos:
 
+&nbsp;
+
 * Comandos de desligar ou reiniciar o sistema requisitarão o shell ```/etc/rc.shutdown```;
 * Após acionar o shell, todos os processos receberam um sinal de ```TERM```, aqueles que não responderem em tempo hábil, receberam um ```KILL```;
+
+&nbsp;
 
 Para o desligamento do sistema em arquiteturas que suportam o controle de ACPI, é necessário os comandos:
 
@@ -659,6 +992,8 @@ init 0
 halt -p
 ```
 
+&nbsp;
+
 Para reiniciar o sistema use:
 
 ```
@@ -667,22 +1002,33 @@ reboot
 halt -q
 ```
 
+&nbsp;
+
 Lembrando somente os membros do grupo ```operator``` ou o próprio ```root``` tem capacidad de reiniciar ou desligar.
 
+&nbsp;
+
 ___
+
+&nbsp;
 
 ### Compilar um PORT
 
+&nbsp;
+
 Para compilar uma porta, você simplesmente muda para o diretório do programa que deseja instalar, digite make installe deixe o sistema fazer o resto. 
 
-___
-
-### Controle de usuários
+&nbsp;
 
 ___
+
+&nbsp;
 
 ### Agradecimentos
 
+&nbsp;
+
 Há, aqui vai coisa ainda para ser feita, más agradeço a própria documentação do BSD e todos os sites buscados durante o desenvolvimento deste mini-manual. 
 
+&nbsp;
 ___
