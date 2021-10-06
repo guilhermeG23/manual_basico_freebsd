@@ -881,7 +881,218 @@ ___
 
 &nbsp;
 
+Aqui chega o famoso 666... mentira, dá pra ir até 777... oquê é isso? Se você está se perguntando isso, lhe respondo que é a permissão de arquivos, diretórios e demais dentro do S.O.
 
+&nbsp;
+
+Numa explicação simples, um arquivo possui três capacidade e três tipos de acessos, forá o proprio tipo do arquivo, Ex:
+
+&nbsp;
+
+|Tipo|Permissão do criador|Permissão do grupo do criador|Permissão de demais usuários|
+|---|---|---|---|
+|-|rw-|r--|r--|
+
+&nbsp;
+
+Ainda confuso? Se sim, olhe esse:
+
+&nbsp;
+
+|Tipo do arquivo|Permissão do criador|Permissão do grupo do criador|Permissão de demais usuários|
+|---|---|---|---|
+|-|6|4|4|
+
+&nbsp;
+
+Agora você entendeu? Não? Más é a mesma coisa as duas tabelas!... Ainda confuso né, bem, olhe isso, agora vai ficar mais explicadinho:
+
+&nbsp;
+
+|Tipo do arquivo|Permissão do criador|Permissão do grupo do criador|Permissão de demais usuários|
+|---|---|---|---|
+|-|rw-|r--|r--|
+|-|6|4|4|
+
+&nbsp;
+
+Primeiro, o arquivo exemplificado tem a permissão ```rw-r--r--``` ou ```644```, isso é, ```[Leitura, escrita][Leitura][Leitura]```, vejá o do pq:
+
+&nbsp;
+
+* ```r``` -> Símbolo de ```read```, que possui o valor de 4;
+* ```w``` -> Símbolo de ```write```, que possui o valor de 2;
+* ```x``` -> Símbolo de ```exec```, que possui o valor de 1;
+
+&nbsp;
+
+Se algo tem a permissão de ```777``` é pq esse algo é equivalente há ```rwxrwxrwx``` ou ```[Leitura, escrita, execução][Leitura, escrita, execução][Leitura, escrita, execução]```
+
+&nbsp;
+
+De forma mais simples, a soma entre os valores gera as permissões por valor, Ex:
+
+&nbsp;
+
+![permissaoarquivosbsd](img/permissaoarquivosbsd.png)
+<center><small>Exemplo de permissão de um diretório.</small></center>
+
+&nbsp;
+
+Agora, vamos fazer a tabela detalhada do ```pastel```, veja:
+
+&nbsp;
+
+|Tipo do arquivo|Permissão do criador|Permissão do grupo do criador|Permissão de demais usuários|
+|---|---|---|---|
+|d|rwx|r-x|r-x|
+|d|4-2-1|4-0-1|4-0-1|
+|d|7|5|5|
+
+&nbsp;
+
+Sim, ```0``` é o equivalente ao ```-```, que dentro das permissões, significa que a permissão foi vetada, porém ele ainda ocupa um espaço de permissão que pode ser eventuamente alterado.
+
+&nbsp;
+
+Agora seguem algumas dúvidas, sendo essas:
+
+&nbsp;
+
+* E os dispositivos conectados ao S.O?
+    * Todos os dispositivos são tratados como arquivos de determinado nível de acesso e normalmente esses dispositivos ficam montados dentro do ```/dev```;
+
+&nbsp;
+
+* Se o primeiro simbolo é o tipo de arquivo e ele tem permissões, oq é um diretório com permissão executável?
+    * Ele é ligeiramente diferente dos arquivos normais mesmo que ainda sejá um arquivo como todos os outros, a permissão de execução a ele, permite que o mesmo possa receber chamadas via ```cd```, permitindo que esse diretório pode ser utilizado pelo coletivo.
+    * Para ler as informações dentro de um diretório, o mesmo tem que ter permissão de leitura, isso é, um ```4 ou r``` na permissão;
+    
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Permissão simbólica
+
+&nbsp;
+
+Utiliza caracteres em vez de valores octais para atribuir permissões, no esquema de (quem)(ação)(permissões), seguindo a tabela abaixo:
+
+|Tipos|Letra|Representa|
+|---|---|---|
+|(quem)|u|Usuário|
+|(quem)|g|Grupo|
+|(quem)|o|Outros|
+|(quem)|a|Todos forá o prórpio|
+|(ação)|+|Adicionar permissão|
+|(ação)|-|Remover permissão|
+|(ação)|=|Definir permissões|
+|(permissão)|r|Leitura|
+|(permissão)|w|Escrita|
+|(permissão)|x|Execução|
+|(permissão)|t|Bit fixador|
+|(permissão)|s|Set UID ou GID|
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Bandeiras do BSD
+
+&nbsp;
+
+Esse é um nível a mais de segurança aos arquivos dentro do BSD, não é valido aos diretorios, somente aos arquivos, porém, com essa funcionabilidade, até mesmo um superusuário como o ```root``` pode ser impedido de realizar açõs sobre arquivos de dentro do sistema.
+
+ 
+&nbsp;
+
+![chflagsbsd](img/chflagsbsd.png)
+<center><small>Onde está marcado de vermelho, é onde está a permissão da flag.</small></center>
+
+&nbsp;
+
+Como demonstrado, o ```chflags``` tem a capacidade de aumentar a segurança e limitar ações sobre arquivos, sendo que até mesmo impediu um superusuário de deletar um arquivo, mesmo com a opção ```-f``` que era para forçar a ação.
+
+&nbsp;
+___
+
+&nbsp;
+
+### Chmod -> Definindo permissões
+
+&nbsp;
+
+Agora que já foi visto o valores, letras e até bandeiras, tá na hora de alguns exemplos sobre a alternancia de permissão entre os usuários sobre arquivos:
+
+&nbsp;
+
+![chmodexemplobsd](img/chmodexemplobsd.png)
+<center><small>Alterando permissões via chmod</small></center>
+
+&nbsp;
+
+O comando ```chmod``` é utilizado para alterar o permissionamento dos arquivos e suas caracteristicas de acesso.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Permissões ```setuid```, ```setgid``` e ```sticky```
+
+&nbsp;
+
+Esses três fazem parte somente de operações expecificas dentro do S.O BSD, para entender seus significados, tem de primeiro explicar oq é um ID real de um ID efetivo de usuário.
+
+&nbsp;
+
+* ***Real*** -> É o ```UID``` que inicia ou do dono do processo;
+* ***Efetivo*** -> É o ```UID``` do usuário que está executando processo;
+
+&nbsp;
+
+Um exemplo de alternancia entre os valores é, utilizando o comando ```passwd```, onde mesmo executando como usuário comum, seu permissionamento é de ```root```, veja o exemplo nas imagens abaixo:
+
+&nbsp;
+
+![passwdtty1bsd](img/passwdtty1bsd.png)
+<center><small>Entrando como outro usuário e pedindo para alterar a senha.</small></center>
+
+&nbsp;
+
+
+![psauxgreppasswdpermissao](img/psauxgreppasswdpermissao.png)
+<center><small>Mostrando a permissão que o outro usuário possui quando executa o comando passwd.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Tipos de arquivos
+
+&nbsp;
+
+Segue listado os tipos possíveis de arquivos dentro do sistema BSD:
+
+&nbsp;
+
+|Símbolo|Descrição|
+|---|---|
+|-|Arquivo comum|
+|d|Diretório|
+|c|Dispositivo de caracteres|
+|b|Dispositivo de blocos|
+|l|Link simbólico|
+|p|Pipe|
+|s|Socket|
 
 &nbsp;
 
