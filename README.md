@@ -27,6 +27,16 @@ ___
 
 &nbsp;
 
+### Sigla
+
+BSD (Berkeley Software Distribution)
+
+&nbsp;
+
+___
+
+&nbsp;
+
 ### Curiosidades interessantes 
 
 * Totalmente free -> Licença BSD -> Sua licença é totalmente aberta, isso é, pode usar para qualquer coisa e pode ser trancado caso aquele que fez o fork queira.
@@ -1072,6 +1082,29 @@ Um exemplo de alternancia entre os valores é, utilizando o comando ```passwd```
 
 &nbsp;
 
+Aplicando permissões ```setuid```, ```setgid``` e ```sticky``` nos arquivos:
+
+&nbsp;
+
+![permissoesespeciaisbsd](img/permissoesespeciaisbsd.png)
+<center><small>Usando o chmod para conceder permissões especiais ao arquivo.</small></center>
+
+&nbsp;
+
+Para a aplicação de qualquer um dos listados, é necessário o superusuário ou ```root```.
+
+&nbsp;
+
+* ```setuid``` -> Permissão ```4``` para o arquivo, isso fará que o arquivo tenha permissão de ```root``` quando executado;
+* ```setgid``` -> Basicamente a mesma coisa que o ```setuid```, porém esse é para grupos e seu valor de referência é ```2```;
+* ```sticky``` -> Esse é diferente dos demais, servindo par aumentar a proteção, trancando o arquivo/diretório a somente o proprietario poder deletar o arquivo, o valor desse é ```1```;
+
+&nbsp;
+
+Agora fazendo uma pequena revisão sobre esse ponto, enquanto o ```setuid``` e o ```setgit``` server para elevar a permissão de um determinado arquivo a superusuário, mesmo sendo executado por usuários com menos permissão, o ```sticky``` serve como uma ferramenta de segurança, travando o arquivo e evitando sua alteração por outros que não sejá o próprio usuário.
+
+&nbsp;
+
 ___
 
 &nbsp;
@@ -1163,9 +1196,761 @@ Fica abaixo um exemplo do uso do local do ```/usr/local``` após qualquer instal
 ![userlocalhtopbsd](img/userlocalhtopbsd.png)
 <center><small>Demonstração de um /usr/local com a instação de somente o componente htop dentro do S.O.</small></center>
 
+
 &nbsp;
 
 ___
+
+&nbsp;
+
+### Organização dos discos
+
+&nbsp;
+
+Caracteristicas:
+
+&nbsp;
+
+* Menor unidade de busca do sistema é o nome;
+* O sistema não é case-sensitive, Ex: ```teste``` é diferente de ```testE``` e outras demais diferenças;
+* A extensão de um arquivo não define que tipo de arquivo é o mesmo;
+* Diretórios são arquivos, os mesmo podem conter de nada a centenas de arquivos do mesmo, ou demais arquivos, além deste tipo de arquivo permitir uma hierarquia;
+* Diferenças entre endereços completos  de arquivos dentro do BSD, Ex: ```/teste/t1.txt``` é de um BSD/Unix/Linux, de um windows é assim ```C:\teste\t1.txt```;
+* Diretórios de nível superior são o inicio do sistema de arquivo que se inicia no ```/```, todos os discos fisicos montados ficam sobre o sistema de arquivo superior, são todos tratados como diretórios dentro do S.O;
+* Sistemas de arquivos diferentes podem ter diferentes opções de montagem,  isso é, é possível montar partes do sistema de arquivos que possuem diferentes caracteristicas;
+
+&nbsp;
+
+Caracteristicas do FreeBSD:
+
+&nbsp;
+
+* O BSD otimiza automaticamente o layout do sistema de arquivos;
+* O sistema de arquivos do BSD é resistente a perda de energia ou finalização inesperada, porém não infalivel, uma forma de garantir maior integridade, é dividir o sistema de arquivos em outras partições, facilitanto  uma manutenção ou desativação de determinadas partições de forma a manter o sistema estável;
+* O sistema de aarquivo são fixos desde o momento de instalação, não sendo simples o aumento do espaço de disco;
+* O BSD pode usar partições com tag's de definição entre A a H, forá uma dessas partições é utilizada como memória reserva, o swap;
+* Pode haver no máximo 4 partições fisicas no máximo, forá que pode haver várias partições lógicas;
+    * Toda partição fisicia do sistema terá como identificação a siglas do hostname, com o prefixo de s e o valor da partição que se inicia no 1, Ex: hostname pastel vai ter as partições ````ps1``` e demais;
+* O BSD identifica os discos como, seu tipo e os nomeando e depois colocando uma valor, Ex: ```ada0```;
+
+&nbsp;
+
+Associação das tag's com as partições
+
+&nbsp;
+
+|partição|Uso|
+|---|---|
+|a|Partição que normalmente fica a raiz ```/```|
+|b|Partição de swap|
+|c|Partição de slices para reparação do S.O|
+|d|Antigamente tinha uma função especial relacionada a essa partição, porém, atualmente, é uma partição qualquer|
+
+&nbsp;
+
+Nome de dispositivos de disco
+
+&nbsp;
+
+|Tipo|Identificação|
+|---|---|
+|Discos rígidos SATA e IDE|ada / ad|
+|Discos rígidos SCSI ou armazenamento USB|da|
+|Drive CD-ROM SATA e IDE|cd / acd|
+|CD-ROM SCSI|cd|
+|Disquete|fd|
+|CD-ROM não padrão|mcd (Mitsumi) / scd (Sony)|
+|Fita SCSI|sd|
+|Fita IDE|ast|
+|RAID|aacd (Adaptec) / mlxd e mlyd (mylex) / amrd (MegaRAID) / idad (Compaq) / twed (3Ware) |
+
+&nbsp;
+
+___
+
+
+&nbsp;
+
+### Montagem de sistema de arquivos
+
+&nbsp;
+
+Uma analogia comum é que o S.O é ramificado que nem uma árvore, possuindo diversos galhos que vão se extendendo, como visto anteriormente, um sistema de arquivos possui diversos diretorios que fazem coisas diferentes no S.O.
+
+&nbsp;
+
+Alguns desses diretórios possuem caracteristicas diferentes e por isso devem ser tratados de formas diferentes, exemplo é montar o ```/var``` em outro sistema de arquivos por motivos que o mesmo tente a crescer e se crescer no raiz, pode acabar prejudicando todo o sistema.
+
+&nbsp;
+
+A capacidade de montar e desmontar sistemas de arquivos são enomres, já que permitem maior flexibilidade ao sistema.
+
+&nbsp;
+
+Vale por fim comentar que alguns sistemas de arquivos não são montadas por motivos de ter a tag ```noauto```, isso é mostrado abaixo no ```fstab```
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Fstab
+
+&nbsp;
+
+Arquivo que mostra os sistemas de arquivos montados durante a inicialização.
+
+&nbsp;
+
+![userlocalhtofstabbsdpbsd](img/fstabbsd.png)
+<center><small>Arquivo FSTAB</small></center>
+
+&nbsp;
+
+* ```device``` -> Nome do dispositivo;
+* ```mount-point``` -> Diretorio alvo a se montar o sistema de arquivos;
+* ```fstype``` -> Tipo do sistema de arquivo (No BSD o padrão é ```ufs```);
+* ```options``` -> Opção de como montar o sistema de dados;
+* ```dumpfreq``` -> Sinaliza se um sistema de arquivos precisa de dump (Um BK do sistema de arquivo);
+* ```passno``` -> Verificação da integridade do sistema de arquivos;
+    * Uma norma utilizada é que, o sistema de arquivos que contem o S.O deve ter a tag de 1, para ser a primeira;
+    * Sistemas de arquivos como o SWAP não necessita dessa tag pois não há necessidade de verificação;
+    * Demais sistemas de arquivos devem possuir a tag de forma crescente como 2,3,4 e assim por diante, não sendo recomendado colocar a mesma tag em mais de um S.A pois o S.O vai fazer a verificação em paralelo;
+
+___
+
+&nbsp;
+
+### Mount
+
+&nbsp;
+
+Comando utilizado para montar partições para o S.O trabalhar ou o usuário se utilizar, Ex:
+
+&nbsp;
+
+* ```-a``` -> Monta todos os sistemas de arquivos listados no ```/etc/fstab``` com excessão de:
+    * Todos marcados como ```noauto```;
+    * Excluidos pelo ```-t```;
+    * Já montados;
+* ```-d``` -> É usado em conjunto com o ```-v``` para simular a montagem de um sistema de arquivos;
+* ```-f``` -> Força a montagem ou trocar da atual permissão de um sistema de arquivos;
+* ```-r``` -> Monta o sistema de arquivo somente para leitura, é igual ao ```-o ro```;
+* ```-t``` -> Especifica o sistema de arquivos que ser´´a montado;
+* ```-u``` -> Atualiza as opções de montagem;
+* ```-v``` -> Modo verbose da operação;
+* ```-w``` -> Monta o sistema com permissão leitura/escrita;
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Umount
+
+&nbsp;
+
+Comando para desmontar sistemas de arquivos/Partições do S.O, Ex: 
+
+&nbsp;
+
+* ```-a``` -> ```-a``` é para a desmontagem de um ponto e ```-A``` é a demontagem do nome do dispositivo;
+* ```-f``` -> Força a desmontagem do sistema de arquivos;
+* ```-v``` -> Modo verbose, mais detalhamento;
+* ```-t``` -> Desmonta todos os sistemas de arquivos;
+
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Processos e daemons
+
+&nbsp;
+
+O sistema BSD é um S.O multitarefa, onde cada programa em execução é chamado de processo, o programa pode ser diversas coisas, Ex: Shell's em execução, programas instalados, execuções de scripts e demais, porém, tudo gera minimamente um unico processo no sistema ou mais.
+
+&nbsp;
+
+Cada processo possui um ID (PID), esse é o número de identificação dos processos, como visto até agora, tudo dentro do sistema tem um nível de acesso e permissionamento, os processos não são diferentes, os processos são sempre iniciados na execução de algo, esses processos podem ser unicos, pais ou filhos e cada um tem sua identificação.
+
+&nbsp;
+
+Somente o processo do ```init``` será de PID 1, já que é o primeiro processo do sistema quando ele da boot.
+
+&nbsp;
+
+![grepinitbsd](img/grepinitbsd.png)
+<center><small>O primeiro processo do sistema.</small></center>
+
+&nbsp;
+
+Existem dois tipos de processos, o primeiro sendo o normal, onde ele é iniciado, executado e finalizado e existe o processo persistente, no caso os *deamons* (Termo grego que se refere a entidade que realiza trabalhos uteis sem conceitos de bom ou mal), programas desse tipo costumam serem nomeados com um ```d``` no final, exemplos são o apache que o processo é marcado como ```httpd```, o spool é ```lpd``` e demais outros.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Processos
+
+&nbsp;
+
+Processos são extremamente importantes, por motivos que o os mesmo são responsaveis por todo o funcionamento do S.O, sendo assim, é importante ficar cientes do mesmo e ter um bom controle sobre eles, assim garantido a saúde do S.O.
+
+&nbsp;
+
+Segue abaixo um pouco sobre listar os processos do S.O:
+
+&nbsp;
+
+* ```ps``` -> Lista os processos de forma estática, seu significado é ```process status```;
+* ```top``` -> Abre um gerenciador de tarefas em tempo real, seu signicado é tela atualizada de informações sobre o consumo da CPU;
+
+&nbsp;
+
+Primeiramente, o comando ```ps``` lista por padrão os processos que o usuário está executando no momento ou que são de prioridade do mesmo.
+
+&nbsp;
+
+![psbsd](img/psbsd.png)
+<center><small>Processos relacionados ao usuário via ps.</small></center>
+
+&nbsp;
+
+Para entender melhor:
+* ```PID``` -> ID unico do processo;
+* ```TT``` -> Sessão TTy em uso;
+* ```STAT``` -> Estado do processo;
+* ```TIME``` -> Tempo que o programa esteve em execução no CPU;
+* ```COMMAND``` -> Comando que é usado para iniciar o processo;
+
+&nbsp;
+
+![psauxwwbsd](img/psauxwwbsd.png)
+<center><small>Usando o ps -auxww.</small></center>
+
+&nbsp;
+
+Esse comando traz os parametros:
+
+* ```a``` -> Informações dos processos em execução;
+* ```u``` -> Detalha mais o processo e seu consumo;
+* ```x``` -> Mostra todos os processos;
+* ```ww``` -> Linha de comando do processo;
+
+&nbsp;
+
+![psubsd](img/psubsd.png)
+<center><small>Diferença entre um ps com e sem o parametro u.</small></center>
+
+&nbsp;
+
+O comando ```top``` é um tela atualizada sobre as tarefas e estados do sistema, divida em duas telas, sendo que a primeira são as informações do ```header```, que são:
+
+&nbsp;
+
+* ```last pid``` -> Ultimo processo do sistema;
+* ```load averages``` -> Carga do sistema, a carga é calculada de 1,5,15 minutos e essa carga é formulada por quantidade de processos por recursos;
+* ```uptime``` -> É o tempo desde o boot e depois é a hora atual;
+* ```process``` -> Quantidade de processos, ativos, parados e zumbis;
+* ```CPU``` -> Mostra a carga do CPU que está em uso;
+* ```Mem``` -> Mostra a carga do uso de memória;
+* ```ARC``` -> Se estiver utilizado um sistemas de arquivo ZFS, essa linha irá demonstrar a quantidade de dados que foram lidas do cache da memoria;
+* ```Swap``` -> Quantidade de memória SWAP em uso no sistema;
+
+&nbsp;
+
+![topbsd](img/topbsd.png)
+<center><small>TOP demais.</small></center>
+
+&nbsp;
+
+Depois do ```header``` vem o ```body``` que são compostos por colunas de informações dos processos do sistema, segue as informações das colunas:
+
+&nbsp;
+
+* ```PID``` -> Identificação do processo;
+* ```USARNAME``` -> Nome do usuário que está executando o processo;
+* ```THR``` -> ;
+* ```PRI``` -> Prioridade do processo;
+* ```NICE``` -> Influenciador de prioridade;
+* ```SIZE``` ->  Quantidade total de memória consumida;
+* ```RES``` -> Memoria atualmente alocada para o processo;
+* ```STATE``` -> Status do processo;
+* ```C``` -> Numero do processo que está em execução;
+* ```TIME``` -> Tempo de uso do processador;
+* ```WCPU``` -> Necessidade de uso do processador;
+* ```COMMAND``` -> Comando que está em execução;
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### KILL... os procesos tá
+
+&nbsp;
+
+O ato de matar o processo é enviar um sinal para que esses processos sejam finalizados, existem vários tipos de sinais que podem ser utilizado, forá que existe várias permissões para reaizar esse ato.
+
+&nbsp;
+
+O ```root``` é o único usuário com permissão total de finalizar qualquer processo do sistema, normalmente, um usuário só pode finalizar processos a qual o mesmo tenha criado.
+
+&nbsp;
+
+Outros sinais são:
+
+&nbsp;
+
+* ```SIGSEGV``` -> "Segmentation violation" ou acesso indevido a memória;
+* ```SIGTERM``` -> Finalização correta do processo, fecha os logs do mesmo e finaliza o processo;
+* ```SIGKILL``` -> Mata o processo de forma brusca;
+* ```SIGHUP, SIGUSR1 e SIGUSR2``` -> Sinais de finalidade geral que são interpretados de forma diferente por diferentes programas;
+
+&nbsp;
+
+Exemplo de um sinal de ```kill``` ao processo:
+
+&nbsp;
+
+![pgreptopbsd](img/pgreptopbsd.png)
+<center><small>Pegando o PID do processo.</small></center>
+
+&nbsp;
+
+![killprocessbsd](img/killprocessbsd.png)
+<center><small>Matando um processo via PID.</small></center>
+
+&nbsp;
+
+É valido comentar que se o ```PID``` não existir, o processo de ```kill``` simplesmente falha, além de que, se o ```PID``` estiver incorreto ou não existir, ainda se pode matar um processo pro meio do nome dele utilizando o ```killall```, Ex:
+
+&nbsp;
+
+![killallbsd](img/killallbsd.png)
+<center><small>Matando um processo via nome.</small></center>
+
+&nbsp;
+
+#### Observação!
+
+&nbsp;
+
+Todo o shell tem seus ```alias```, o ```kill``` não é excessão e pode até carregar parametros no mesmo, sendo assim, é recomendado verificar o tratamento do shell sobre os comandos, além de, uma forma de evitar que o shell execute o comando com parametros não desejado, é mais facil executar o programa pelo caminho completo, exemplo é usar o utilitário direto do ```/bin```.
+
+&nbsp;
+
+Por fim é valido dar algumas recomendações, não mate os processos do sistema caso não os conheça, a menos que o ambiente que esteja usando sejá descartavel ou para esses meios.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Shells 
+
+&nbsp;
+
+O shell é a interface de meio de campo entre o usuário e o sistema operacional, os shell's carregam várias coisas com sigo, como váriaveis de ambiente, abtenção dos arquivos e demais, o BSD em si, vem com vários modelos de shell's juntos, como o ```shell bourne (sh)``` e ```shell C extendido (tcsh)```.
+
+&nbsp;
+
+Existem outros demais shell's como:
+
+&nbsp;
+
+* ZSH;
+* Bash;
+* CSH;
+
+&nbsp;
+
+Em geral, os shells tem as mesmas utilidades, sendo mais uma questão de gosto e funcionabilidades extras para definir a utilização de cada qual.
+
+&nbsp;
+
+O shell tem a capacidade de utilizar váriaveis de ambiente, sendo alguns já definidos pelo sistema, seguem abaixo alguns exemplos:
+
+
+&nbsp;
+
+|Váriavel|Descrição|
+|---|---|
+|USER|Nome do usuário|
+|PATH|Diretórios que contém executaveis|
+|DISPLAY|Display Xorg disponíveis|
+|SHELL|Shell em uso|
+|TERM|Software terminal em uso|
+|TERMCAP|Funções do terminal em uso|
+|OSTYPE|Tipo do S.O|
+|MACHTYPE|Arquitetura do CPU|
+|EDITOR|Editor de texto preferencial do usuário|
+|PAGER|Utilitário padrão para visulização de arquivos|
+|MANPAHT|Locais de manuais do S.O|
+
+
+&nbsp;
+
+![variaveisambientebsd](img/variaveisambientebsd.png)
+<center><small>Segue exemplos dos echo's dos valores de váriaveis globais.</small></center>
+
+
+&nbsp;
+
+Você pode usar qualquer shell, porém, como dito, cada uma tem suas caracteristicas, um exemplo disso é que para setar váriaveis de ambiente ou global, o processo é diferente dependente os shell's, segue o exemplo prático:
+
+&nbsp;
+
+![setenvexportbsd](img/setenvexportbsd.png)
+<center><small>Diferença entre criar váriaveis de ambiente entre um CSH e um SH.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Caracteres especiais
+
+&nbsp;
+
+Aqui é mais um aviso, o shell interpreta caracteres especiais e pode até dar uso em alguns, como exemplo a imagem abaixo:
+
+&nbsp;
+
+![caracterespecialbsd](img/caracterespecialbsd.png)
+<center><small>Um LS diferente...</small></center>
+
+&nbsp;
+
+Para você evitar o uso de caracteres especiais dentro do shell, você tem que escapar, Ex:
+
+&nbsp;
+
+![escapebsd](img/escapebsd.png)
+<center><small>Usando um escape de caracteres...</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Alterando o shell do usuário
+
+&nbsp;
+
+Tem algumas formas de alterar o shell do sistema, que são:
+
+* Alterando a váriavel de ambientedo ```$SHELL```;
+* Usando o comando ```chsh```;
+* Executar um novo shell na sessão atual;
+
+&nbsp;
+
+Veja a seguir a demonstração dos mesmos:
+
+&nbsp;
+
+![shbsd](img/shbsd.png)
+<center><small>Usando o CHSH para trocar de shell..</small></center>
+
+&nbsp;
+
+Arquivo que lista todos os ```SHELL's``` instalados no sistema, esse arquivo é automaticamente atualizando quando um shell novo é instalado via PKG:
+
+&nbsp;
+
+![etcshellsbsd](img/etcshellsbsd.png)
+<center><small>Arquivo /etc/shells que lista todos os shells que o sistema possui e pode se utilizar.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Usando direcionadores
+
+&nbsp;
+
+Usos mais avançados do shell são de intercalação de comandos, uso de direcionadores e demais, Exemplo é a imagem que vai a seguir:
+
+&nbsp;
+
+![exemplodesaidashellbsd](img/exemplodesaidashellbsd.png)
+<center><small>Demonstrando o uso de um direcionador e seu resultado.</small></center>
+
+&nbsp;
+
+Direcionador:
+* ```>``` -> Direciona a saída para a criação de um arquivo ou substituição total de um já existente;
+* ```>>``` -> Incrementador e/ou criador, quando utilizado, o mesmo atualiza o contéudo de um arquivo, adicionando no final do mesmo as novas linhas, caso o arquivo não exista, será criado um novo arquivo pela ação;
+
+&nbsp;
+
+Intercalar:
+* ```|``` -> Pipeline faz com que a saída de uma operação seja jogada para outra operação;
+* ```&&``` -> Condição de ```AND```, mais conhecido como E, onde o mesmo somente apresenta resultados se a condição for verdadeira, isso é, ambos os lados tivrem suas operações retornando um resultado aceitavel;
+* ```||``` -> Condição de ```OR```, mais conhecido como OU, essa é uma condição onde somente um dos lados da operação deve ser verdadeiro para a amostra dos resultados;
+
+
+&nbsp;
+
+![condicaoebsd](img/condicaoebsd.png)
+<center><small>Usando uma codição de AND.</small></center>
+
+&nbsp;
+
+![condicaooubsd](img/condicaooubsd.png)
+<center><small>Usando uma codição de OU.</small></center>
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Editores de texto
+
+&nbsp;
+
+O FreeBSD possui vários editores de arquivos pelo próprio sistema, Ex:
+
+&nbsp;
+
+* ```vi```
+* ```ee```
+* ```nano```
+
+&nbsp;
+
+É bom conhecer o mínimo de cada um, já que há chances da necessidade de alteração de arquivos do sistema ou qualquer do tipo, necessitando de uma ferramenta que não sejá por interface gráfica.
+
+&nbsp;
+
+O conhecimento e uso de um editor de texto é necessário a todos os usuários, já que os mesmos podem economizar tempo em tarefas e támbem pelo fato que sem a alteração de arquivos, ficará extremamente limitado a atuação dentro do S.O.
+
+&nbsp;
+
+###### P.S: Existem demais outros editores de texto, porém tem que utilizar do PKG para instalar os mesmos, um exemplo é o ```vim```, que é uma versão melhorada do ```vi``` normal.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### DMESG
+
+&nbsp;
+
+Durante o boot do kernel do BSD, você deve ter visto um monte de mensagens durante o start do sistema, essas mensagens ficam armazenadas no ```/var/run/dmesg```.
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Dispositivos e nós
+
+&nbsp;
+
+Todos os dispositivos são montados em ```/dev```, cada dispositivo tem uma sigla e um número de identificação, Ex: 
+
+&nbsp;
+
+* ```ada0``` -> Disco SATA;
+* ```kbd0``` -> Teclado;
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Manual
+
+&nbsp;
+
+Quase todo o comando dentro do sistema ou instalado, possui um manual, Ex:
+
+&nbsp;
+
+```
+man ls
+```
+
+&nbsp;
+
+Partes do manual:
+
+* 1° -> Comnados do usuário;
+* 2° -> Chamadas do sistema e números de erro;
+* 3° -> Funções nas bibliotecas C;
+* 4° -> Drivers de dispositivo;
+* 5° -> Formatos de arquivo;
+* 6° -> Jogos e outras diversões;
+* 7° -> Informações diversas;
+* 8° -> Comandos de manutenção e operação do sistema;
+* 9° -> Interfaces do kernel do sistema;
+
+&nbsp;
+
+![manmanbsd](img/manmanbsd.png)
+<center><small>Aquele cômico man do man... bugou né</small></center>
+
+&nbsp;
+
+Alguns comandos:
+
+&nbsp;
+
+* ```man -k``` -> Mostra partes que fazem refêrencia a procura, Ex:
+
+&nbsp;
+
+![mankpsbsd](img/mankpsbsd.png)
+<center><small>Usando um -k para achar todas as refêrencias</small></center>
+
+&nbsp;
+
+* ```man -f comando``` -> Faz uma emulação da base de dados do ```whatis```, Ex: 
+
+&nbsp;
+
+![emulatedwhatisbsd](img/emulatedwhatisbsd.png)
+<center><small>Emulando um whatis</small></center>
+
+&nbsp;
+___
+
+
+&nbsp;
+
+### Pacotes
+
+&nbsp;
+
+O FreeBSD fornece duas ferramentas diferentes para a instalação de pacotes:
+
+&nbsp;
+
+* Coleção dos ports;
+* Pacotes pré-compilados;
+
+&nbsp;
+
+Exemplo de instalação de arquivos terceiros ao sistema:
+
+&nbsp;
+
+* 1 -> Encontre o software e o baixe (código-fonte ou binário);
+* 2 -> Descompacte o software para o mesmo ser utilizado;
+* 3 -> Os arquivos descompactados normalmente possuem um diretório ```doc/``` que auxilia na instalação;
+* 4 -> Se for um código-fonte, necessita compilarr;
+* 5 -> Teste o compilado e instale;
+
+&nbsp;
+
+O ```port``` é toda uma coleção de arquivos para otimizar o processo de instalação de um código-fonte, servindo para baixar, extrair, corrigir, compilar e instalar aplicativo.
+
+&nbsp;
+
+Existem mais de 24 mil pacotes já preparados para o BSD, caso necessite de um pacote que não exista no BSD, é necessário compilar o mesmo utilizando as ferramentas do sistema para seu funcionamento.
+
+&nbsp;
+
+Vale comentar que todos os pacotes e ports do sistema, são gerenciaveis pelas ferramentas de tratamento de software do sistema.
+
+&nbsp;
+
+Tanto para pacotes quanto  ports sofrem um mesmo problema, isso é, dependencias, esses são partes extras necessárias para o funcionamento de determinados programas, um exemplo simples é que, um programa pode nessecitar de uma Lib em C para funcionar.
+
+&nbsp;
+
+Caracteristicas entre os dois sistemas:
+
+* tarball compactado de um pacote é menor que um código-fonte;
+* Pacotes não requerem tempo de compilação;
+* Pacotes não requerem entendimento do processo de compilação;
+* Aplicativos podem requerer alterações durante a compilação, por motivos de possuirem extras ou demais funcionabilidades;
+* Algumas aplicações por motivos de licenças não podem ser distribuidas via pacote, necessitando ser via código-fonte;
+* Aplicações em código-fonte são totalmente aberta a leitura e alteração antes da compilação e instalação;
+* Código fonte é utilizado para aplicação de patches personalizados;
+
+&nbsp;
+
+___
+
+&nbsp;
+
+### Encontre os softwares para o BSD
+
+&nbsp;
+
+Segue uma lista de locais que se podem encontrar softwares para a plataforma BSD:
+
+&nbsp;
+
+* No site do [FreeBSD](https://www.freebsd.org/ports/);
+* Dan Langille mante o site [FreshPorts](https://www.freshports.org/), esse site possui diversar funcionabilidades, sendo essas:
+    * Envio de email com base em alterações em pacotes marcados;
+    * Atualidade conforme os pacotes;
+* Plataformas terceiras, como exemplo o github;
+
+&nbsp;
+
+Segue um exemplo de como saber os pacotes binários de uma aplicação, Ex:
+
+&nbsp;
+
+
+![pkgsearchbsd](img/pkgsearchbsd.png)
+<center><small>Pacotes binários do subversion</small></center>
+
+&nbsp;
+
+O retornado é:
+* Os pacotes necessários que foram compilados para uso do programa;
+* Versionamento dos pacotes;
+* Descrição dos pacotes;
+
+&nbsp;
+
+![pkgosearchbsd](img/pkgosearchbsd.png)
+<center><small>Usando o -o como parametro</small></center>
+
+&nbsp;
+
+Com o parametro -o, ele lista a origem do pacote, exemplo é que alguns dos listados vieram do ```devel```, outros do ```java``` e assim por diante.
+
+&nbsp;
+
+Uma forma de procurar por programas dentro do sistema utilizando o ```whereis```, Ex:
+
+&nbsp;
+
+![whereisbsd](img/whereisbsd.png)
+<center><small>Procurando programas dentro do sistema e conferindo se o mesmo existe.</small></center>
+
+&nbsp;
+
+
+&nbsp;
+
+___
+
 
 &nbsp;
 
