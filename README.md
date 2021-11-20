@@ -113,7 +113,7 @@ ___
 
 ### BIOS
 
-Bom lembrar que existem dois tipos de BIOS utilizadas atualmente, a legancy e a UEFI, sendo a primeira a mais antiga e genérica e a segunda uma versão bolatada entre da Microsoft e a Intel que se espalhou para demais fabricantes e hardwares.
+Bom lembrar que existem dois tipos de BIOS utilizadas atualmente, a legacy e a UEFI, sendo a primeira a mais antiga e genérica e a segunda uma versão bolatada entre da Microsoft e a Intel que se espalhou para demais fabricantes e hardwares.
 
 &nbsp;
 
